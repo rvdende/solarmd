@@ -15,10 +15,10 @@ npm install solarmd
 
 Replace the serialnumber of your logger v2 in the hostname below. Be on the same local network.
 
-```ts
-import { SolarMdLoggerV2Driver } from "solarmd";
+```js
+const solarmd = require('solarmd')
 
-let solar = new SolarMdLoggerV2Driver({
+let solar = new solarmd.SolarMdLoggerV2Driver({
     hostname: 'loggerv2-slv213643303',
     username: 'admin',
     password: 'admin'
