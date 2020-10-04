@@ -75,8 +75,7 @@ export class SolarMdLoggerV2Driver extends EventEmitter {
 
         if (isJson(b)) {
             let statuspacket = JSON.parse(b);
-            console.log(statuspacket)
-            // this.emit('status', statuspacket);
+            this.emit('status', statuspacket);
         }
     }
 
