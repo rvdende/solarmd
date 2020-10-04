@@ -55,6 +55,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SolarMdLoggerV2Driver = void 0;
 var events_1 = require("events");
 var puppeteer_1 = __importDefault(require("puppeteer"));
+// export declare interface SolarMdLoggerV2Driver {
+//     on(event: 'gotWSUri', listener: (url: string) => void): this;
+//     on(event: 'status', listener: (status: LogV2MessageType1 | LogV2Message<any>) => void): this;
+//     on(event: string, listener: Function): this;
+// }
 var SolarMdLoggerV2Driver = /** @class */ (function (_super) {
     __extends(SolarMdLoggerV2Driver, _super);
     function SolarMdLoggerV2Driver(options) {
