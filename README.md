@@ -5,6 +5,7 @@ Interact with Solar MD hardware.
 
 0.0.1   Initial release. EXPERIMENTAL!
 0.0.2   Fix not emitting status bug
+0.0.3   Add .d.ts typings file
 
 ## Install
 
