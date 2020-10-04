@@ -1,11 +1,11 @@
 import { EventEmitter } from 'events';
 import puppeteer from 'puppeteer'
 
-export declare interface SolarMdLoggerV2Driver {
-    on(event: 'gotWSUri', listener: (url: string) => void): this;
-    on(event: 'status', listener: (url: string) => void): this;
-    on(event: string, listener: Function): this;
-}
+// export declare interface SolarMdLoggerV2Driver {
+//     on(event: 'gotWSUri', listener: (url: string) => void): this;
+//     on(event: 'status', listener: (status: LogV2MessageType1 | LogV2Message<any>) => void): this;
+//     on(event: string, listener: Function): this;
+// }
 
 
 export class SolarMdLoggerV2Driver extends EventEmitter {
@@ -83,53 +83,6 @@ export class SolarMdLoggerV2Driver extends EventEmitter {
 }
 
 
-
-export interface LoggerV2DeviceStatusPacket {
-    devType: number
-    ackID: number
-    msgType: string
-    devModel: number
-    messageList: LoggerV2DeviceStatusPacketMessage[]
-    success: boolean
-    dataClass: string
-    keepJsonData: boolean
-    encodeMessageData: boolean
-    requiredACK: boolean
-    dataActual: boolean
-}
-
-export interface LoggerV2DeviceStatusPacketMessage {
-    parrentId: any,
-    serialNumber: string,
-    hidden: boolean
-    hwVer: string
-    modelID: number
-    fwVer: string
-    deviceID: number
-    deviceName: string //important
-    manufacturer: string // important
-    connected: boolean
-    lastSeen: number
-    subModelID: number
-    installedDate: number
-    typeID: number
-    status: any
-}
-
-
-
-
-export interface LogV2Message<T> {
-    msgType: number
-    devModel: number
-    messageList: T[]
-    success: boolean
-    dataClass: string
-    keepJsonData: boolean
-    encodeMessageData: boolean
-    requiredACK: boolean
-    dataActual: boolean
-}
 
 
 
