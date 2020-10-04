@@ -3,7 +3,7 @@ Interact with Solar MD hardware.
 
 ## Changelog
 
-1.0.0   Initial release. EXPERIMENTAL!
+0.0.1   Initial release. EXPERIMENTAL!
 
 ## Install
 
