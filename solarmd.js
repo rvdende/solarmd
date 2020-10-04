@@ -129,8 +129,7 @@ var SolarMdLoggerV2Driver = /** @class */ (function (_super) {
         var b = a.join('|');
         if (isJson(b)) {
             var statuspacket = JSON.parse(b);
-            console.log(statuspacket);
-            // this.emit('status', statuspacket);
+            this.emit('status', statuspacket);
         }
     };
     return SolarMdLoggerV2Driver;
