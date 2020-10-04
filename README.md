@@ -4,6 +4,7 @@ Interact with Solar MD hardware.
 ## Changelog
 
 0.0.1   Initial release. EXPERIMENTAL!
+0.0.2   Fix not emitting status bug
 
 ## Install
 
