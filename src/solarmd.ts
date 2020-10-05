@@ -74,8 +74,42 @@ export class SolarMdLoggerV2Driver extends EventEmitter {
         let b = a.join('|');
 
         if (isJson(b)) {
-            let statuspacket = JSON.parse(b);
-            this.emit('status', statuspacket);
+            let status = JSON.parse(b);
+            this.emit('status', status);
+
+            // Further process
+
+            let known = false;
+
+            if (status.msgType == 1) known = true;
+
+            if (status.msgType == 0) {
+                // STORAGE
+                if (status.devModel === 11) {
+                    known = true;
+                    this.emit('storage', status.messageList)
+                }
+                // POWER
+                if (status.devModel === 12) {
+                    known = true;
+                    this.emit('power', status.messageList)
+                }
+            }
+
+            // DEVICE LIST
+            if (status.msgType === "subDevStatus") {
+                if (status.devModel === 10) {
+                    known = true;
+
+                    this.emit('devices', status.messageList)
+                }
+            }
+
+            if (known === false) {
+                console.log("=================== unknown PACKET ! =========");
+            }
+
+            // End
         }
     }
 

@@ -2,7 +2,11 @@ import { EventEmitter } from "events";
 
 export declare interface SolarMdLoggerV2Driver {
     on(event: 'gotWSUri', listener: (url: string) => void): this;
-    on(event: 'status', listener: (url: LogV2MessageType1 | LogV2MessageType0Possible) => void): this;
+    on(event: 'status', listener: (url: StatusMessageTypes) => void): this;
+
+    on(event: 'storage', listener: (storage: Storage[]) => void);
+    on(event: 'power', listener: (power: Power[]) => void);
+    on(event: 'devices', listener: (devices: Device[]) => void);
     on(event: string, listener: Function): this;
 }
 
@@ -18,7 +22,11 @@ export class SolarMdLoggerV2Driver extends EventEmitter {
 
 }
 
-export interface LogV2MessageType1 {
+
+
+export type StatusMessageTypes = InitMessage | DataMessage<11, Storage> | DataMessage<12, Power> | DeviceList;
+
+export interface InitMessage {
     msgType: 1,
     data: string,
     requestID: number,
@@ -30,9 +38,7 @@ export interface LogV2MessageType1 {
     dataActual: boolean
 }
 
-export type LogV2MessageType0Possible = LogV2MessageType0<11, MessageDevModel11> | LogV2MessageType0<12, MessageDevModel12> | LogV2MessageType_subDevStatus
-
-export interface LogV2MessageType0<D, T> {
+export interface DataMessage<D, T> {
     msgType: 0
     devModel: D
     messageList: T[]
@@ -45,7 +51,7 @@ export interface LogV2MessageType0<D, T> {
 }
 
 // STORAGE
-export interface MessageDevModel11 {
+export interface Storage {
     powerW: number
     ratedDischargeCurrentC: number
     voltageV: number,
@@ -64,7 +70,7 @@ export interface MessageDevModel11 {
 }
 
 // DISCHARGING
-export interface MessageDevModel12 {
+export interface Power {
     powerW: number
     weeklyEnergyWh: number
     voltageV: number
@@ -87,27 +93,28 @@ export interface MessageDevModel12 {
 
 // LIST OF DEVICES
 
-export interface LogV2MessageType_subDevStatus {
+export interface DeviceList {
     devType: number,
     ackID: number,
     msgType: 'subDevStatus',
     devModel: number,
-    messageList:
-    {
-        parrentId: any
-        serialNumber: string
-        hidden: boolean
-        hwVer: string
-        modelID: number
-        fwVer: string
-        deviceID: number
-        deviceName: string
-        manufacturer: string
-        connected: boolean
-        lastSeen: number
-        subModelID: number
-        installedDate: number
-        typeID: number
-        status: any
-    }[]
+    messageList: Device[]
+}
+
+export interface Device {
+    parrentId: any
+    serialNumber: string
+    hidden: boolean
+    hwVer: string
+    modelID: number
+    fwVer: string
+    deviceID: number
+    deviceName: string
+    manufacturer: string
+    connected: boolean
+    lastSeen: number
+    subModelID: number
+    installedDate: number
+    typeID: number
+    status: any
 }

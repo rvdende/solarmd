@@ -133,8 +133,35 @@ var SolarMdLoggerV2Driver = /** @class */ (function (_super) {
         a.shift();
         var b = a.join('|');
         if (isJson(b)) {
-            var statuspacket = JSON.parse(b);
-            this.emit('status', statuspacket);
+            var status_1 = JSON.parse(b);
+            this.emit('status', status_1);
+            // Further process
+            var known = false;
+            if (status_1.msgType == 1)
+                known = true;
+            if (status_1.msgType == 0) {
+                // STORAGE
+                if (status_1.devModel === 11) {
+                    known = true;
+                    this.emit('storage', status_1.messageList);
+                }
+                // POWER
+                if (status_1.devModel === 12) {
+                    known = true;
+                    this.emit('power', status_1.messageList);
+                }
+            }
+            // DEVICE LIST
+            if (status_1.msgType === "subDevStatus") {
+                if (status_1.devModel === 10) {
+                    known = true;
+                    this.emit('devices', status_1.messageList);
+                }
+            }
+            if (known === false) {
+                console.log("=================== unknown PACKET ! =========");
+            }
+            // End
         }
     };
     return SolarMdLoggerV2Driver;
