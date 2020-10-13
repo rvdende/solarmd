@@ -10,6 +10,7 @@ Interact with Solar MD hardware.
 | 0.0.3   | Add .d.ts typings for typescript   
 | 0.0.4   | Improved typings for `status` packets
 | 0.0.5   | Improved typings and added `power`, `storage` and `devices` events.
+| 0.0.6   | Added auto reconnect after 30sec inactivity
 
 ## Install
 

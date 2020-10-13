@@ -1,21 +1,17 @@
 import { EventEmitter } from 'events';
 import puppeteer from 'puppeteer'
 
-// export declare interface SolarMdLoggerV2Driver {
-//     on(event: 'gotWSUri', listener: (url: string) => void): this;
-//     on(event: 'status', listener: (status: LogV2MessageType1 | LogV2Message<any>) => void): this;
-//     on(event: string, listener: Function): this;
-// }
-
-
 export class SolarMdLoggerV2Driver extends EventEmitter {
     hostname = 'loggerv2-serialnumber';
     username = 'admin'; // default is admin
     password = 'admin'; // default is admin
+    lastdata: Date | undefined = undefined;
+
+    timer;
+    browser: puppeteer.Browser | undefined;
 
     constructor(options: { hostname: string, username?: string, password?: string }) {
         super();
-
         if (options) {
             if (options.hostname) this.hostname = options.hostname;
             if (options.username) this.username = options.username;
@@ -23,52 +19,61 @@ export class SolarMdLoggerV2Driver extends EventEmitter {
         }
 
         this.connect();
+
+        this.timer = setInterval(() => {
+            if (this.lastdata) {
+                let timeago = new Date().getTime() - this.lastdata.getTime();
+                if (timeago > 30000) {
+                    this.connect();
+                }
+            } else {
+
+            }
+        }, 10000)
     }
 
-    connect = () => {
+    connect = async () => {
+        let url = 'http://' + this.hostname
+        console.log(`${new Date().toISOString()} \t Connecting ` + url)
+        if (this.browser) { await this.browser.close() }
 
-        (async () => {
-            // https://github.com/puppeteer/puppeteer/issues/1762
-            const browser = await puppeteer.launch({
-                headless: true, // set to false to see the browser while it works.
-                // args: ['--start-fullscreen'] 
-            });
-            const page = await browser.newPage();
-
-            let url = 'http://' + this.hostname
-            console.log(`${new Date().toISOString()} \t Connecting ` + url)
-            await page.goto(url);
-            // await page.focus('#loginForm\:j_idt12')
-
-            await page.evaluate((username) => { document.querySelectorAll('input')[1].value = username }, this.username);
-            await page.evaluate((password) => { document.querySelectorAll('input')[2].value = password }, this.password);
-            await page.click('button');
-
-            // detects websockets
-            let pageCopy: any = page;
-            const client = pageCopy._client
-
-            client.on('Network.webSocketCreated', ({ url }: { url: string }) => {
-                this.emit('gotWSUri', url);
-            })
-
-            client.on('Network.webSocketClosed', () => { })
-
-            client.on('Network.webSocketFrameSent', () => { })
-
-            client.on('Network.webSocketFrameReceived', ({ response }: { response: { payloadData: string } }) => {
-                this.processWebsocketPacket(response.payloadData);
-            })
+        // https://github.com/puppeteer/puppeteer/issues/1762
+        this.browser = await puppeteer.launch({
+            headless: true, // set to false to see the browser while it works.
+            // args: ['--start-fullscreen'] 
+        });
+        const page = await this.browser.newPage();
 
 
-            await page.waitForSelector('.dashboardWraper', { visible: true, timeout: 0 });
 
-        })();
+        await page.goto(url);
+        // await page.focus('#loginForm\:j_idt12')
 
+        await page.evaluate((username: string) => { document.querySelectorAll('input')[1].value = username }, this.username);
+        await page.evaluate((password: string) => { document.querySelectorAll('input')[2].value = password }, this.password);
+        await page.click('button');
 
+        // detects websockets
+        let pageCopy: any = page;
+        const client = pageCopy._client
+
+        client.on('Network.webSocketCreated', ({ url }: { url: string }) => {
+            this.emit('gotWSUri', url);
+        })
+
+        client.on('Network.webSocketClosed', () => { })
+
+        client.on('Network.webSocketFrameSent', () => { })
+
+        client.on('Network.webSocketFrameReceived', ({ response }: { response: { payloadData: string } }) => {
+            this.processWebsocketPacket(response.payloadData);
+        })
+
+        await page.waitForSelector('.dashboardWraper', { visible: true, timeout: 0 });
     }
 
     processWebsocketPacket(payloadData: string) {
+        this.lastdata = new Date();
         let a = payloadData.split('|')
         a.shift()
         let b = a.join('|');

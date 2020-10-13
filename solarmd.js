@@ -55,11 +55,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SolarMdLoggerV2Driver = void 0;
 var events_1 = require("events");
 var puppeteer_1 = __importDefault(require("puppeteer"));
-// export declare interface SolarMdLoggerV2Driver {
-//     on(event: 'gotWSUri', listener: (url: string) => void): this;
-//     on(event: 'status', listener: (status: LogV2MessageType1 | LogV2Message<any>) => void): this;
-//     on(event: string, listener: Function): this;
-// }
 var SolarMdLoggerV2Driver = /** @class */ (function (_super) {
     __extends(SolarMdLoggerV2Driver, _super);
     function SolarMdLoggerV2Driver(options) {
@@ -67,56 +62,65 @@ var SolarMdLoggerV2Driver = /** @class */ (function (_super) {
         _this.hostname = 'loggerv2-serialnumber';
         _this.username = 'admin'; // default is admin
         _this.password = 'admin'; // default is admin
-        _this.connect = function () {
-            (function () { return __awaiter(_this, void 0, void 0, function () {
-                var browser, page, url, pageCopy, client;
-                var _this = this;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0: return [4 /*yield*/, puppeteer_1.default.launch({
+        _this.lastdata = undefined;
+        _this.connect = function () { return __awaiter(_this, void 0, void 0, function () {
+            var url, _a, page, pageCopy, client;
+            var _this = this;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        url = 'http://' + this.hostname;
+                        console.log(new Date().toISOString() + " \t Connecting " + url);
+                        if (!this.browser) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.browser.close()];
+                    case 1:
+                        _b.sent();
+                        _b.label = 2;
+                    case 2:
+                        // https://github.com/puppeteer/puppeteer/issues/1762
+                        _a = this;
+                        return [4 /*yield*/, puppeteer_1.default.launch({
                                 headless: true,
                             })];
-                        case 1:
-                            browser = _a.sent();
-                            return [4 /*yield*/, browser.newPage()];
-                        case 2:
-                            page = _a.sent();
-                            url = 'http://' + this.hostname;
-                            console.log(new Date().toISOString() + " \t Connecting " + url);
-                            return [4 /*yield*/, page.goto(url)];
-                        case 3:
-                            _a.sent();
-                            // await page.focus('#loginForm\:j_idt12')
-                            return [4 /*yield*/, page.evaluate(function (username) { document.querySelectorAll('input')[1].value = username; }, this.username)];
-                        case 4:
-                            // await page.focus('#loginForm\:j_idt12')
-                            _a.sent();
-                            return [4 /*yield*/, page.evaluate(function (password) { document.querySelectorAll('input')[2].value = password; }, this.password)];
-                        case 5:
-                            _a.sent();
-                            return [4 /*yield*/, page.click('button')];
-                        case 6:
-                            _a.sent();
-                            pageCopy = page;
-                            client = pageCopy._client;
-                            client.on('Network.webSocketCreated', function (_a) {
-                                var url = _a.url;
-                                _this.emit('gotWSUri', url);
-                            });
-                            client.on('Network.webSocketClosed', function () { });
-                            client.on('Network.webSocketFrameSent', function () { });
-                            client.on('Network.webSocketFrameReceived', function (_a) {
-                                var response = _a.response;
-                                _this.processWebsocketPacket(response.payloadData);
-                            });
-                            return [4 /*yield*/, page.waitForSelector('.dashboardWraper', { visible: true, timeout: 0 })];
-                        case 7:
-                            _a.sent();
-                            return [2 /*return*/];
-                    }
-                });
-            }); })();
-        };
+                    case 3:
+                        // https://github.com/puppeteer/puppeteer/issues/1762
+                        _a.browser = _b.sent();
+                        return [4 /*yield*/, this.browser.newPage()];
+                    case 4:
+                        page = _b.sent();
+                        return [4 /*yield*/, page.goto(url)];
+                    case 5:
+                        _b.sent();
+                        // await page.focus('#loginForm\:j_idt12')
+                        return [4 /*yield*/, page.evaluate(function (username) { document.querySelectorAll('input')[1].value = username; }, this.username)];
+                    case 6:
+                        // await page.focus('#loginForm\:j_idt12')
+                        _b.sent();
+                        return [4 /*yield*/, page.evaluate(function (password) { document.querySelectorAll('input')[2].value = password; }, this.password)];
+                    case 7:
+                        _b.sent();
+                        return [4 /*yield*/, page.click('button')];
+                    case 8:
+                        _b.sent();
+                        pageCopy = page;
+                        client = pageCopy._client;
+                        client.on('Network.webSocketCreated', function (_a) {
+                            var url = _a.url;
+                            _this.emit('gotWSUri', url);
+                        });
+                        client.on('Network.webSocketClosed', function () { });
+                        client.on('Network.webSocketFrameSent', function () { });
+                        client.on('Network.webSocketFrameReceived', function (_a) {
+                            var response = _a.response;
+                            _this.processWebsocketPacket(response.payloadData);
+                        });
+                        return [4 /*yield*/, page.waitForSelector('.dashboardWraper', { visible: true, timeout: 0 })];
+                    case 9:
+                        _b.sent();
+                        return [2 /*return*/];
+                }
+            });
+        }); };
         if (options) {
             if (options.hostname)
                 _this.hostname = options.hostname;
@@ -126,9 +130,20 @@ var SolarMdLoggerV2Driver = /** @class */ (function (_super) {
                 _this.hostname = options.hostname;
         }
         _this.connect();
+        _this.timer = setInterval(function () {
+            if (_this.lastdata) {
+                var timeago = new Date().getTime() - _this.lastdata.getTime();
+                if (timeago > 30000) {
+                    _this.connect();
+                }
+            }
+            else {
+            }
+        }, 10000);
         return _this;
     }
     SolarMdLoggerV2Driver.prototype.processWebsocketPacket = function (payloadData) {
+        this.lastdata = new Date();
         var a = payloadData.split('|');
         a.shift();
         var b = a.join('|');
